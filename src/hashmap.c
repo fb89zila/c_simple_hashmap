@@ -109,9 +109,27 @@ static void hashmap_del_bucket_ll(bucket* b)
 
 void hashmap_del(hashmap* map)
 {
+    #ifdef DEBUG
+        printf("+-------------------------------------------------------------------------------+\n");
+        printf("DELETE MAP %d\n", map->value_type);
+        printf("DELETE LINKED LISTS");
+    #endif // DEBUG
+
     for (int i = 0; i < map->capacity; i++)
+    {
         if ((map->bucket_list+i)->next != NULL)
+        {
+            #ifdef DEBUG
+                printf(" %3d, ", i);;
+            #endif // DEBUG
+
             hashmap_del_bucket_ll((map->bucket_list+i)->next);
+        }
+    }
+
+    #ifdef DEBUG
+        printf("\n+-------------------------------------------------------------------------------+\n\n");
+    #endif // DEBUG
 
     free(map->bucket_list);
     free(map);
@@ -140,7 +158,7 @@ void hashmap_resize(hashmap* map)
 {
     #ifdef DEBUG
         printf("+--------------+\n| RESIZING MAP |\n+--------------+\n\n");
-    #endif
+    #endif // DEBUG
 
     bucket* old_bucket_list = map->bucket_list;
     size_t old_capacity = map->capacity;
@@ -228,9 +246,18 @@ void hashmap_add_set(hashmap* map, char* key, void* value)
     bucket* matching_bucket = hashmap_find(map, key, hash, &last_entry);
 
     if (matching_bucket != NULL)
+    {
+        #ifdef DEBUG
+            printf("SET KEY '%s'\n", key);
+        #endif // DEBUG
         matching_bucket->value = value;
+    }
     else
     {       
+        #ifdef DEBUG
+            printf("CREATE KEY '%s' (map-size: %ld)\n", key, map->size);
+        #endif // DEBUG
+
         if (last_entry != NULL && last_entry->key == NULL)
             hashmap_write_entry(last_entry, key, hash, value);
         else
@@ -249,7 +276,7 @@ void hashmap_add_set(hashmap* map, char* key, void* value)
     }
 }
 
-void hashmap_remove(hashmap* map, char* key)
+bool hashmap_remove(hashmap* map, char* key)
 {
     uint64_t hash = hash_string(key);
 
@@ -257,9 +284,16 @@ void hashmap_remove(hashmap* map, char* key)
     bucket* to_delete = hashmap_find(map, key, hash, &last_entry);
 
     if (to_delete == NULL)
+    {
         printf("No entry with key %s\n", key);
+        return true;
+    }
     else 
     {
+        #ifdef DEBUG
+            printf("REMOVE KEY '%s' (map-size: %ld)\n", to_delete->key, map->size-1);
+        #endif // DEBUG
+
         if (last_entry == NULL)
         {
             bucket* next_entry = to_delete->next;
@@ -273,6 +307,7 @@ void hashmap_remove(hashmap* map, char* key)
         }
 
         map->size -= 1;
+        return false;
     }
 }
 
@@ -292,8 +327,8 @@ void hashmap_iter(hashmap* map)
         if ((map->bucket_list+i)->key != NULL)
         {
             #ifdef DEBUG
-                printf("bucket: %d\n", i);
-            #endif
+                printf("-----------\nbucket: %d\n-----------\n", i);
+            #endif // DEBUG
             
             print_bucket(map->bucket_list+i, map->value_type);
         }            

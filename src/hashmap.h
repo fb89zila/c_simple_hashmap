@@ -152,8 +152,9 @@ void hashmap_resize(hashmap* map);
  * 
  * @param map hashmap with entry
  * @param key entry to remove
+ * @return false/0 (no error) if successful
  */
-void hashmap_remove(hashmap* map, char* key);
+bool hashmap_remove(hashmap* map, char* key);
 
 /* Prints the given bucket
  * 
