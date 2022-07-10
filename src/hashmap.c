@@ -296,8 +296,8 @@ int main(void)
 
     for (int i = 0; i < 6; i++)
     {
-        hashmap_add_set(map, keys[i], return_void_ptr(data[i]));
-        hashmap_add_set(str_map, keys[i], return_void_ptr(keys[i]));
+        hashmap_add_set(map, keys[i], &data[i]);
+        hashmap_add_set(str_map, keys[i], &keys[i]);
     }
     
     hashmap_iter(map);

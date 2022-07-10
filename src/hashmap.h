@@ -15,8 +15,6 @@
 // Defines resize multiplier
 #define DEFAULT_RESIZE_MULT 2
 
-#define return_void_ptr(n) _Generic( (n), default: &n)
-
 // Possible data types of the values
 typedef enum type type;
 
