@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+// Debug switch
+#define DEBUG
+
 // Capacity for initializing and resizing
 #define DEFAULT_CAPACITY 16
 // Defines when to resize

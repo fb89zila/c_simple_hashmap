@@ -35,7 +35,6 @@ void print_value(void* value, type value_type)
         default:
             break;
     }
-    void (*ptr)() = &return_char;
 }
 
 uint64_t hash_string(char* key)
@@ -52,9 +51,10 @@ uint64_t hash_string(char* key)
 void hashmap_write_entry(bucket* dest, char* key, uint64_t hash, void* value)
 {
     dest->next = NULL;
-    strcpy(dest->key, key);
     dest->hash = hash;
     dest->value = value;
+    dest->key = malloc(strlen(key)*sizeof(char));
+    strcpy(dest->key, key);
 }
 
 void hashmap_copy_entry(bucket* dest, bucket* src)
@@ -166,9 +166,15 @@ static bucket* hashmap_find(hashmap* map, char* key, uint64_t hash, bucket** las
     uint32_t index = (u_int32_t) hash % map->capacity;
 
     bucket* current = map->bucket_list+index;
-
+    
     while (1)
     {
+        if (current->key == NULL)
+        {
+            *(last_entry) = current;
+            return NULL;
+        }
+
         if (strcmp(current->key, key) && current->hash == hash)
             return current;
 
@@ -235,7 +241,7 @@ void hashmap_remove(hashmap* map, char* key)
     uint64_t hash = hash_string(key);
 
     bucket* last_entry = NULL;
-    bucket* to_delete = hashmap_find(map, key, hash, last_entry);
+    bucket* to_delete = hashmap_find(map, key, hash, &last_entry);
 
     if (to_delete == NULL)
         printf("No entry with key %s\n", key);
@@ -259,9 +265,9 @@ void hashmap_remove(hashmap* map, char* key)
 
 void print_bucket(bucket* b, type value_type)
 {
-    printf("key: %s\n", b->key);
+    printf("key: %s, value: ", b->key);
     print_value(b->value, value_type);
-    printf("\n(hash: %d\n)", b->hash);
+    printf(" (hash: %d)\n", b->hash);
 
     if (b->next != NULL)
         print_bucket(b->next, value_type);
@@ -271,13 +277,35 @@ void hashmap_iter(hashmap* map)
 {
     for (int i = 0; i < map->capacity; i++)
         if ((map->bucket_list+i)->key != NULL)
-                print_bucket(map->bucket_list+i, map->value_type);
+        {
+            #ifdef DEBUG
+                printf("bucket: %d\n", i);
+            #endif
+            
+            print_bucket(map->bucket_list+i, map->value_type);
+        }            
 }
 
 int main(void)
 {
     hashmap* map = hashmap_init(TYPE_FLOAT);
-    printf("%ld %d\n", map->capacity, !map->bucket_list->key);
+    hashmap* str_map = hashmap_init(TYPE_STRING);
+    
+    char* keys[] = {"teststring", "test", "string", "teng", "testring", "testg"};
+    float data[] = {5.234,        5.135,  135.133,  51535,  1555.335,   109182.12497};
+
+    for (int i = 0; i < 6; i++)
+    {
+        hashmap_add_set(map, keys[i], return_void_ptr(data[i]));
+        hashmap_add_set(str_map, keys[i], return_void_ptr(keys[i]));
+    }
+    
+    hashmap_iter(map);
+    printf("\n");
+    hashmap_iter(str_map);
+
+    printf("\n");
+
     hashmap_del(map);
 
     return EXIT_SUCCESS;
