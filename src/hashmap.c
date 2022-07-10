@@ -53,16 +53,27 @@ void hashmap_write_entry(bucket* dest, char* key, uint64_t hash, void* value)
     dest->next = NULL;
     dest->hash = hash;
     dest->value = value;
-    dest->key = malloc(strlen(key)*sizeof(char));
+    
+    if (dest->key == NULL)
+        dest->key = malloc(strlen(key)*sizeof(char));
+    else
+        dest->key = realloc(dest->key, strlen(key));
+
     strcpy(dest->key, key);
 }
 
 void hashmap_copy_entry(bucket* dest, bucket* src)
 {
     dest->next = src->next;
-    strcpy(dest->key, src->key);
     dest->hash = src->hash;
     dest->value = src->value;
+    
+    if (dest->key == NULL)
+        dest->key = malloc(strlen(src->key)*sizeof(char));
+    else
+        dest->key = realloc(dest->key, strlen(src->key));
+
+    strcpy(dest->key, src->key);
 }
 
 hashmap* hashmap_init(type valuetype)
@@ -113,13 +124,13 @@ static void hashmap_rehash(hashmap* map, bucket* old_entry)
     bucket* current = map->bucket_list+new_index;
 
     if (current->key == NULL)
-        hashmap_copy_entry(current, old_entry);
+        hashmap_write_entry(current, old_entry->key, old_entry->hash, old_entry->value);
     else
-    {
+    {   
         while (current->next != NULL)
             current = current->next;
         
-        current->next = malloc(sizeof(bucket));
+        current->next = (bucket*) malloc(sizeof(bucket));
         hashmap_write_entry(current->next, old_entry->key, old_entry->hash, old_entry->value);
     }
 
@@ -127,6 +138,10 @@ static void hashmap_rehash(hashmap* map, bucket* old_entry)
 
 void hashmap_resize(hashmap* map)
 {
+    #ifdef DEBUG
+        printf("+--------------+\n| RESIZING MAP |\n+--------------+\n\n");
+    #endif
+
     bucket* old_bucket_list = map->bucket_list;
     size_t old_capacity = map->capacity;
 
@@ -231,8 +246,6 @@ void hashmap_add_set(hashmap* map, char* key, void* value)
             
             last_entry->next = new_entry;
         }
-
-        map->size += 1;
     }
 }
 
