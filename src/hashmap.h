@@ -15,6 +15,15 @@
 // Defines resize multiplier
 #define DEFAULT_RESIZE_MULT 2
 
+#define hashmap_add_set(map, key, value) _Generic((value), \
+int: int_to_void_ptr, \
+uint32_t: uint_to_void_ptr, \
+float: float_to_void_ptr, \
+double: double_to_void_ptr, \
+char: char_to_void_ptr, \
+char*: string_to_void_ptr \
+) ((map), (key), (value))
+
 // Possible data types of the values
 typedef enum type type;
 
@@ -52,12 +61,30 @@ struct hashmap
 
 // functions to return value in its intended data type
 
+int hashmap_get_int(hashmap* map, char* key);
+uint32_t hashmap_get_uint(hashmap* map, char* key);
+float hashmap_get_float(hashmap* map, char* key);
+double hashmap_get_double(hashmap* map, char* key);
+char hashmap_get_char(hashmap* map, char* key);
+char* hashmap_get_string(hashmap* map, char* key);
+
+// functions to return value in its intended data type
+
 int return_int(void* data);
 uint32_t return_uint(void* data);
 float return_float(void* data);
 double return_double(void* data);
 char return_char(void* data);
 char* return_string(void* data);
+
+// functions to turn value-data types into void* for __hashmap_add_set__
+
+void* int_to_void_ptr(hashmap* map, char* key, int data);
+void* uint_to_void_ptr(hashmap* map, char* key, uint32_t data);
+void* float_to_void_ptr(hashmap* map, char* key, float data);
+void* double_to_void_ptr(hashmap* map, char* key, double data);
+void* char_to_void_ptr(hashmap* map, char* key, char data);
+void* string_to_void_ptr(hashmap* map, char* key, char* data);
 
 /* Prints value.
  *
@@ -110,6 +137,19 @@ static void hashmap_del_bucket_ll(bucket* b);
  */
 void hashmap_del(hashmap* map);
 
+/* Rehashes entriy
+ * 
+ * @param map map with new bucket_list
+ * @param old_bucket entry to rehash
+ */
+static void hashmap_rehash(hashmap* map, bucket* old_entry);
+
+/* Resizes hashmap by 'DEFAULT_RESIZE_MULT'
+ * 
+ * @param map hashmap to resize
+ */
+void hashmap_resize(hashmap* map);
+
 /* Find given key with hash in given hashmap.
  * 
  * @param map hashmap
@@ -126,7 +166,7 @@ static bucket* hashmap_find(hashmap* map, char* key, uint64_t hash, bucket** las
  * @param key key with value
  * @return value as void pointer
  */
-void* hashmap_get(hashmap* map, char* key);
+void* __hashmap_get__(hashmap* map, char* key);
 
 /* Add new entry to hashmap.
  * 
@@ -134,19 +174,7 @@ void* hashmap_get(hashmap* map, char* key);
  * @param key new key
  * @param value new value
  */
-void hashmap_add_set(hashmap* map, char* key, void* value);
-
-/* Rehashes entriy
- * 
- * @param map map with new bucket_list
- * @param old_bucket entry to rehash
- */
-static void hashmap_rehash(hashmap* map, bucket* old_entry);
-/* Resizes hashmap by 'DEFAULT_RESIZE_MULT'
- * 
- * @param map hashmap to resize
- */
-void hashmap_resize(hashmap* map);
+static void __hashmap_add_set__(hashmap* map, char* key, void* value);
 
 /* Remove entry from hashmap.
  * 

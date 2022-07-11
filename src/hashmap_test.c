@@ -109,12 +109,12 @@ int main(void)
     // fill hashmaps with data
     for (int i = 0; i < HASHMAP_SIZE; i++)
     {
-        hashmap_add_set(map_arr[0], keys[i], ints+i);
-        hashmap_add_set(map_arr[1], keys[i], uints+i);
-        hashmap_add_set(map_arr[2], keys[i], floats+i);
-        hashmap_add_set(map_arr[3], keys[i], doubles+i);
-        hashmap_add_set(map_arr[4], keys[i], chars+i);
-        hashmap_add_set(map_arr[5], keys[i], strings+i);
+        hashmap_add_set(map_arr[0], keys[i], ints[i]);
+        hashmap_add_set(map_arr[1], keys[i], uints[i]);
+        hashmap_add_set(map_arr[2], keys[i], floats[i]);
+        hashmap_add_set(map_arr[3], keys[i], doubles[i]);
+        hashmap_add_set(map_arr[4], keys[i], chars[i]);
+        hashmap_add_set(map_arr[5], keys[i], strings[i]);
     }
     
     // iterate though hashmaps
@@ -132,11 +132,12 @@ int main(void)
     hashmap* rm_map = hashmap_init(TYPE_INT);
 
     for (int k = 0; k < 13; k++)
-        hashmap_add_set(rm_map, keys_rm_array[k], vals_rm_array+k);
+        hashmap_add_set(rm_map, keys_rm_array[k], vals_rm_array[k]);
 
     // remove entries
     hashmap_iter(rm_map);
-    printf("remove() = %d\n", return_int(hashmap_get(rm_map, "a")));
+    hashmap_add_set(rm_map, "a", 100);
+    printf("remove() = %d\n", hashmap_get_int(rm_map, "a"));
     hashmap_remove(rm_map, "a");
     hashmap_remove(rm_map, "r");
     hashmap_iter(rm_map);

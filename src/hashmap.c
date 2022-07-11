@@ -3,20 +3,78 @@
 #include <stdlib.h>
 #include <string.h>
 
-int return_int(void* data) {return *((int*) data);}
-uint32_t return_uint(void* data) {return *((uint32_t*) data);}
-float return_float(void* data) {return *((float*) data);}
-double return_double(void* data) {return *((double*) data);}
-char return_char(void* data) {return *((char*) data);}
-char* return_string(void* data) {return *((char**) data);}
+int hashmap_get_int(hashmap* map, char* key)
+{ return *((int*) __hashmap_get__(map, key)); }
 
-/*void* get_void_ptr(int data)
+uint32_t hashmap_get_uint(hashmap* map, char* key)
+{ return *((uint32_t*) __hashmap_get__(map, key)); }
+
+float hashmap_get_float(hashmap* map, char* key)
+{ return *((float*) __hashmap_get__(map, key)); }
+
+double hashmap_get_double(hashmap* map, char* key)
+{ return *((double*) __hashmap_get__(map, key)); }
+
+char hashmap_get_char(hashmap* map, char* key)
+{ return *((char*) __hashmap_get__(map, key)); }
+
+char* hashmap_get_string(hashmap* map, char* key)
+{ return *((char**) __hashmap_get__(map, key)); }
+
+int return_int(void* data) { return *((int*) data); }
+uint32_t return_uint(void* data) { return *((uint32_t*) data); }
+float return_float(void* data) { return *((float*) data); }
+double return_double(void* data) { return *((double*) data); }
+char return_char(void* data) { return *((char*) data); }
+char* return_string(void* data) { return *((char**) data); }
+
+void* int_to_void_ptr(hashmap* map, char* key, int data)
 {
     int* data_ptr = malloc(sizeof(int));
     *data_ptr = data;
 
-    return data_ptr;
-}*/
+    __hashmap_add_set__(map, key, data_ptr);
+}
+
+void* uint_to_void_ptr(hashmap* map, char* key, uint32_t data)
+{
+    uint32_t* data_ptr = malloc(sizeof(uint32_t));
+    *data_ptr = data;
+
+    __hashmap_add_set__(map, key, data_ptr);
+}
+
+void* float_to_void_ptr(hashmap* map, char* key, float data)
+{
+    float* data_ptr = malloc(sizeof(float));
+    *data_ptr = data;
+
+    __hashmap_add_set__(map, key, data_ptr);
+}
+
+void* double_to_void_ptr(hashmap* map, char* key, double data)
+{
+    double* data_ptr = malloc(sizeof(double));
+    *data_ptr = data;
+
+    __hashmap_add_set__(map, key, data_ptr);
+}
+
+void* char_to_void_ptr(hashmap* map, char* key, char data)
+{
+    char* data_ptr = malloc(sizeof(char));
+    *data_ptr = data;
+
+    __hashmap_add_set__(map, key, data_ptr);
+}
+
+void* string_to_void_ptr(hashmap* map, char* key, char* data)
+{
+    char** data_ptr = malloc(sizeof(char*));
+    *data_ptr = data;
+
+    __hashmap_add_set__(map, key, data_ptr);
+}
 
 void print_value(void* value, type value_type)
 {
@@ -159,7 +217,6 @@ static void hashmap_rehash(hashmap* map, bucket* old_entry)
         current->next = (bucket*) malloc(sizeof(bucket));
         hashmap_write_entry(current->next, old_entry->key, old_entry->hash, old_entry->value);
     }
-
 }
 
 void hashmap_resize(hashmap* map)
@@ -227,7 +284,7 @@ static bucket* hashmap_find(hashmap* map, char* key, uint64_t hash, bucket** las
     return NULL;
 }
 
-void* hashmap_get(hashmap* map, char* key)
+void* __hashmap_get__(hashmap* map, char* key)
 {
     uint64_t hash = hash_string(key);
 
@@ -241,7 +298,7 @@ void* hashmap_get(hashmap* map, char* key)
     return NULL;
 }
 
-void hashmap_add_set(hashmap* map, char* key, void* value)
+static void __hashmap_add_set__(hashmap* map, char* key, void* value)
 {
     if (map->size++ > DEFAULT_LOAD * map->capacity)
         hashmap_resize(map);
