@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 // Debug switch
-#define DEBUG
+//#define DEBUG
 
 // Capacity for initializing and resizing
 #define DEFAULT_CAPACITY 16
@@ -59,7 +59,7 @@ struct hashmap
     size_t capacity;
 };
 
-// functions to return value in its intended data type
+// hashmap_get() for specific data types
 
 int hashmap_get_int(hashmap* map, char* key);
 uint32_t hashmap_get_uint(hashmap* map, char* key);
@@ -68,7 +68,7 @@ double hashmap_get_double(hashmap* map, char* key);
 char hashmap_get_char(hashmap* map, char* key);
 char* hashmap_get_string(hashmap* map, char* key);
 
-// functions to return value in its intended data type
+// return a void pointer as a specific data types
 
 int return_int(void* data);
 uint32_t return_uint(void* data);
@@ -77,7 +77,7 @@ double return_double(void* data);
 char return_char(void* data);
 char* return_string(void* data);
 
-// functions to turn value-data types into void* for __hashmap_add_set__
+// values -> void pointer
 
 void* int_to_void_ptr(hashmap* map, char* key, int data);
 void* uint_to_void_ptr(hashmap* map, char* key, uint32_t data);
@@ -129,7 +129,7 @@ hashmap* hashmap_init(type valuetype);
  * 
  * @param b bucket to delete
  */
-static void hashmap_del_bucket_ll(bucket* b);
+static void __hashmap_del_bucket_ll__(bucket* b);
 
 /* Deletes hashmap.
  * 
@@ -142,13 +142,13 @@ void hashmap_del(hashmap* map);
  * @param map map with new bucket_list
  * @param old_bucket entry to rehash
  */
-static void hashmap_rehash(hashmap* map, bucket* old_entry);
+static void __hashmap_rehash__(hashmap* map, bucket* old_entry);
 
 /* Resizes hashmap by 'DEFAULT_RESIZE_MULT'
  * 
  * @param map hashmap to resize
  */
-void hashmap_resize(hashmap* map);
+void __hashmap_resize__(hashmap* map);
 
 /* Find given key with hash in given hashmap.
  * 
@@ -158,7 +158,7 @@ void hashmap_resize(hashmap* map);
  * @param last_entry [out] last found entry in bucket
  * @return bucket with matching key and hash (NULL if no match)
  */
-static bucket* hashmap_find(hashmap* map, char* key, uint64_t hash, bucket** last_entry);
+static bucket* __hashmap_find__(hashmap* map, char* key, uint64_t hash, bucket** last_entry);
 
 /* Retrieve value for given key.
  * 

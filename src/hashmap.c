@@ -165,10 +165,10 @@ hashmap* hashmap_init(type valuetype)
     return map;
 }
 
-static void hashmap_del_bucket_ll(bucket* b)
+static void __hashmap_del_bucket_ll__(bucket* b)
 {
     if (b->next != NULL)
-        hashmap_del_bucket_ll(b->next);
+        __hashmap_del_bucket_ll__(b->next);
     
     free(b);
 }
@@ -189,7 +189,7 @@ void hashmap_del(hashmap* map)
                 printf(" %3d, ", i);;
             #endif // DEBUG
 
-            hashmap_del_bucket_ll((map->bucket_list+i)->next);
+            __hashmap_del_bucket_ll__((map->bucket_list+i)->next);
         }
     }
 
@@ -201,7 +201,7 @@ void hashmap_del(hashmap* map)
     free(map);
 }
 
-static void hashmap_rehash(hashmap* map, bucket* old_entry)
+static void __hashmap_rehash__(hashmap* map, bucket* old_entry)
 {
     uint32_t new_index = (u_int32_t) (old_entry->hash % map->capacity);
     
@@ -240,26 +240,26 @@ void hashmap_resize(hashmap* map)
 
         if (current->key != NULL && current->next != NULL)
         {
-            hashmap_rehash(map, current);
+            __hashmap_rehash__(map, current);
 
             while (current->next != NULL)
             {
-                hashmap_rehash(map, current->next);
+                __hashmap_rehash__(map, current->next);
                 current = current->next;
             }
 
-            hashmap_del_bucket_ll((old_bucket_list+i)->next);
+            __hashmap_del_bucket_ll__((old_bucket_list+i)->next);
         }
         else if (current->key != NULL && current->next == NULL)
         {
-            hashmap_rehash(map, current);
+            __hashmap_rehash__(map, current);
         }   
     }
 
     free(old_bucket_list);
 }
 
-static bucket* hashmap_find(hashmap* map, char* key, uint64_t hash, bucket** last_entry)
+static bucket* __hashmap_find__(hashmap* map, char* key, uint64_t hash, bucket** last_entry)
 {
     uint32_t index = (u_int32_t) (hash % map->capacity);
 
@@ -289,7 +289,7 @@ void* __hashmap_get__(hashmap* map, char* key)
     uint64_t hash = hash_string(key);
 
     bucket* last_entry = NULL;
-    bucket* matching_bucket = hashmap_find(map, key, hash, &last_entry);
+    bucket* matching_bucket = __hashmap_find__(map, key, hash, &last_entry);
 
     if (matching_bucket != NULL)
         return matching_bucket->value;
@@ -306,7 +306,7 @@ static void __hashmap_add_set__(hashmap* map, char* key, void* value)
     uint64_t hash = hash_string(key);
 
     bucket* last_entry = NULL;
-    bucket* matching_bucket = hashmap_find(map, key, hash, &last_entry);
+    bucket* matching_bucket = __hashmap_find__(map, key, hash, &last_entry);
 
     if (matching_bucket != NULL)
     {
@@ -344,7 +344,7 @@ bool hashmap_remove(hashmap* map, char* key)
     uint64_t hash = hash_string(key);
 
     bucket* last_entry = NULL;
-    bucket* to_delete = hashmap_find(map, key, hash, &last_entry);
+    bucket* to_delete = __hashmap_find__(map, key, hash, &last_entry);
 
     if (to_delete == NULL)
     {
@@ -361,8 +361,7 @@ bool hashmap_remove(hashmap* map, char* key)
         {
             to_delete->key = NULL;
             to_delete->hash = 0;
-            to_delete->value = NULL; // Garbage not collected
-            //free(to_delete->value);
+            free(to_delete->value);
         }
         else if (to_delete->next == NULL && last_entry != to_delete)
         {

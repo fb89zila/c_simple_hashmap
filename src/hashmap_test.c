@@ -120,7 +120,7 @@ int main(void)
     // iterate though hashmaps
     for (int j = 0; j < 6; j++)
     {
-        hashmap_iter(map_arr[j]); printf("\n");
+        hashmap_iter(map_arr[j]);
         printf("\n");
         hashmap_del(map_arr[j]);
     }
