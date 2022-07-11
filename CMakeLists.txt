@@ -8,8 +8,9 @@ project(hashmap VERSION 1.0)
 message(STATUS ${PROJECT_BINARY_DIR})
 
 add_library(hashmap_src src/hashmap.c)
+add_library(random_data src/random_data.c)
 add_executable(hashmap src/hashmap_test.c)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "hashmap_test")
 
-target_link_libraries(hashmap PUBLIC hashmap_src)
+target_link_libraries(hashmap PUBLIC hashmap_src random_data)
