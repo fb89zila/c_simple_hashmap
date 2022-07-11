@@ -10,6 +10,14 @@ double return_double(void* data) {return *((double*) data);}
 char return_char(void* data) {return *((char*) data);}
 char* return_string(void* data) {return *((char**) data);}
 
+/*void* get_void_ptr(int data)
+{
+    int* data_ptr = malloc(sizeof(int));
+    *data_ptr = data;
+
+    return data_ptr;
+}*/
+
 void print_value(void* value, type value_type)
 {
     switch (value_type)
@@ -137,7 +145,7 @@ void hashmap_del(hashmap* map)
 
 static void hashmap_rehash(hashmap* map, bucket* old_entry)
 {
-    uint32_t new_index = (u_int32_t) old_entry->hash % map->capacity;
+    uint32_t new_index = (u_int32_t) (old_entry->hash % map->capacity);
     
     bucket* current = map->bucket_list+new_index;
 
@@ -196,29 +204,27 @@ void hashmap_resize(hashmap* map)
 
 static bucket* hashmap_find(hashmap* map, char* key, uint64_t hash, bucket** last_entry)
 {
-    uint32_t index = (u_int32_t) hash % map->capacity;
+    uint32_t index = (u_int32_t) (hash % map->capacity);
 
     bucket* current = map->bucket_list+index;
-    
-    while (1)
+    *(last_entry) = current;
+
+    if (current->key != NULL)
     {
-        if (current->key == NULL)
-        {
-            *(last_entry) = current;
-            return NULL;
-        }
-
-        if (strcmp(current->key, key) && current->hash == hash)
+        if (!strcmp(current->key, key) && current->hash == hash)
             return current;
-
-        if (current->next != NULL)
-            current = current->next;
-        else
+    
+        while (current->next != NULL)
         {
-            *(last_entry) = current;
-            return NULL;
+            if (!strcmp(current->next->key, key) && current->next->hash == hash)
+                return current->next;
+
+            *(last_entry) = current->next;
+            current = current->next;
         }
     }
+
+    return NULL;
 }
 
 void* hashmap_get(hashmap* map, char* key)
@@ -258,7 +264,7 @@ void hashmap_add_set(hashmap* map, char* key, void* value)
             printf("CREATE KEY '%s' (map-size: %ld)\n", key, map->size);
         #endif // DEBUG
 
-        if (last_entry != NULL && last_entry->key == NULL)
+        if (last_entry->next == NULL && last_entry->key == NULL)
             hashmap_write_entry(last_entry, key, hash, value);
         else
         {
@@ -294,11 +300,23 @@ bool hashmap_remove(hashmap* map, char* key)
             printf("REMOVE KEY '%s' (map-size: %ld)\n", to_delete->key, map->size-1);
         #endif // DEBUG
 
-        if (last_entry == NULL)
+        if (to_delete->next == NULL && last_entry == to_delete)
+        {
+            to_delete->key = NULL;
+            to_delete->hash = 0;
+            to_delete->value = NULL; // Garbage not collected
+            //free(to_delete->value);
+        }
+        else if (to_delete->next == NULL && last_entry != to_delete)
+        {
+            last_entry->next = NULL;
+            free(to_delete);
+        }
+        else if (to_delete->next != NULL && last_entry == to_delete)
         {
             bucket* next_entry = to_delete->next;
             hashmap_copy_entry(to_delete, next_entry);
-            free(next_entry);
+            free(next_entry);      
         }
         else
         {
