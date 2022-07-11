@@ -100,7 +100,7 @@ int main(void)
     // create random keys and values
     char** keys = create_random_str_arr(50);
     int* ints = create_random_int_arr();
-    uint32_t uints = create_random_uint_arr();
+    uint32_t* uints = create_random_uint_arr();
     float* floats = create_random_float_arr();
     double* doubles = create_random_double_arr();
     char* chars = create_random_char_arr();
@@ -118,12 +118,31 @@ int main(void)
     }
     
     // iterate though hashmaps
-    for (int i = 0; i < 6; i++)
+    for (int j = 0; j < 6; j++)
     {
-        hashmap_iter(map_arr[i]); printf("\n");
+        hashmap_iter(map_arr[j]); printf("\n");
         printf("\n");
-        hashmap_del(map_arr[i]);
+        hashmap_del(map_arr[j]);
     }
+
+    // create array for hashmap_remove() test
+    char* keys_rm_array[] = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "p", "q", "r"};
+    int vals_rm_array[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+
+    hashmap* rm_map = hashmap_init(TYPE_INT);
+
+    for (int k = 0; k < 13; k++)
+        hashmap_add_set(rm_map, keys_rm_array[k], vals_rm_array+k);
+
+    // remove entries
+    hashmap_iter(rm_map);
+    printf("remove() = %d\n", return_int(hashmap_get(rm_map, "a")));
+    hashmap_remove(rm_map, "a");
+    hashmap_remove(rm_map, "r");
+    hashmap_iter(rm_map);
+
+    // delete rm_map
+    hashmap_del(rm_map);
 
     return 0;
 }
