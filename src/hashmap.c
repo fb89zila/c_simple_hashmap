@@ -325,7 +325,7 @@ void* __hashmap_get__(hashmap* map, char* key)
     if (matching_bucket != NULL)
         return matching_bucket->value;
     
-    printf("Key %s not found.\n", key);
+    printf("Key '%s' not found.\n", key);
     return NULL;
 }
 
@@ -385,7 +385,7 @@ bool hashmap_remove(hashmap* map, char* key)
 
     if (to_delete == NULL)
     {
-        printf("No entry with key %s\n", key);
+        printf("No entry with key '%s' to remove.\n", key);
         return true;
     }
     else 
@@ -424,9 +424,9 @@ bool hashmap_remove(hashmap* map, char* key)
 
 void print_bucket(bucket* b, type value_type)
 {
-    printf("key: %s, value: ", b->key);
+    printf("key: '%s', value: '", b->key);
     print_value(b->value, value_type);
-    printf(" (hash: %lu)\n", b->hash);
+    printf("' (hash: '%lu')\n", b->hash);
 
     if (b->next != NULL)
         print_bucket(b->next, value_type);
