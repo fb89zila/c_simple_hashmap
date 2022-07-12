@@ -59,16 +59,12 @@ char** create_random_str_arr(size_t max_str_length, size_t array_size)
 
     for (int i = 0; i < array_size; i++)
     {
-        int32_t str_len = rand() % max_str_length;
+        int32_t str_len = (rand() % max_str_length) + 2; // strlen + \0
 
-        if (str_len < 2)
-            str_len = 2;
-
-        str = malloc(sizeof(char) * str_len);
+        str = calloc(str_len, sizeof(char));
 
         for (int j = 0; j < str_len-1; j++)
             *(str+j) = CHAR_POOL[rand() % CHAR_POOL_SIZE];
-        str[str_len-1] = 0;
 
         *(array+i) = str;
     }

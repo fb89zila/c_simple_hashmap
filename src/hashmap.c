@@ -154,7 +154,7 @@ void hashmap_write_entry(bucket* dest, char* key, uint64_t hash, void* value)
     dest->value = value;
     
     if (dest->key == NULL)
-        dest->key = (char*) calloc(sizeof(char), strlen(key)+1);
+        dest->key = (char*) calloc(strlen(key)+1, sizeof(char));
     else
         dest->key = (char*) realloc(dest->key, strlen(key)+1);
 
@@ -168,7 +168,7 @@ void hashmap_copy_entry(bucket* dest, bucket* src)
     dest->value = src->value;
     
     if (dest->key == NULL)
-        dest->key = (char*) calloc(sizeof(char), strlen(src->key)+1);
+        dest->key = (char*) calloc(strlen(src->key)+1, sizeof(char));
     else
         dest->key = (char*) realloc(dest->key, strlen(src->key)+1);
 

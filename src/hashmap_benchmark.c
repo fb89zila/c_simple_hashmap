@@ -21,7 +21,7 @@ int round_up(float num)
 char** create_keys(size_t array_size)
 {
     size_t str_size_with_null = round_up(array_size / (float) CHAR_POOL_SIZE) + 1;
-    char* str = calloc(sizeof(char), str_size_with_null);
+    char* str;
 
     char** array = malloc(sizeof(char*) * array_size);
     
@@ -34,7 +34,7 @@ char** create_keys(size_t array_size)
     {
         for (int j = 0; j < needed_loops; j++)
         {
-            str = calloc(sizeof(char), str_size_with_null);
+            str = calloc(str_size_with_null, sizeof(char));
 
             for (int i = 0; i <= max_pos; i++)
             {
