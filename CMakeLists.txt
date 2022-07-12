@@ -5,6 +5,8 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 
 project(hashmap VERSION 1.0)
 
+file(WRITE ${PROJECT_BINARY_DIR}/benchmark.csv "type of hashmap,hashmap_add_set() [add],hashmap_add_set() [set],get(),iter(),resize(),remove()\n")
+
 add_library(hashmap_lib SHARED src/hashmap.c src/random_data.c)
 
 add_executable(hashmap_test src/hashmap_test.c)

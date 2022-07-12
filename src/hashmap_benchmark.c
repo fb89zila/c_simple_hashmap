@@ -157,10 +157,13 @@ int main()
     end = clock();
     remove_str = end - start;
 
-    printf("| type of hashmap | hashmap_add_set() [add] | hashmap_add_set() [set] | get() | iter() | resize() | remove() |\n");
-    printf("|:---------------:|:-----------------------:|:-----------------------:|:-----:|:------:|:--------:|:--------:|\n");
-    printf("|%s|%ld|%ld|%ld|%ld|%ld|%ld|\n", get_map_type(map_int), add_int, set_int, get_int, iter_int, resize_int, remove_int);
-    printf("|%s|%ld|%ld|%ld|%ld|%ld|%ld|\n", get_map_type(map_str), add_str, set_str, get_str, iter_str, resize_str, remove_str);
+    // write to markdown file (created by cmake)
+    FILE* file = fopen("benchmark.csv", "a");
+
+    fprintf(file, "%s,%ld,%ld,%ld,%ld,%ld,%ld\n", get_map_type(map_int), add_int, set_int, get_int, iter_int, resize_int, remove_int);
+    fprintf(file, "%s,%ld,%ld,%ld,%ld,%ld,%ld\n", get_map_type(map_str), add_str, set_str, get_str, iter_str, resize_str, remove_str);
+
+    fclose(file);
 
     hashmap_del(map_int);
     hashmap_del(map_str);
