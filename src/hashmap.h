@@ -40,13 +40,15 @@ enum type
     TYPE_STRING
 };
 
+static const char* enum_type_str[] = {"TYPE_INT", "TYPE_UINT", "TYPE_FLOAT", "TYPE_DOUBLE", "TYPE_CHAR", "TYPE_STRING"};
+
 struct bucket
 {
     bucket* next;
 
     char* key;
     void* value;
-    uint32_t hash;
+    uint64_t hash;
 };
 
 struct hashmap
@@ -92,6 +94,12 @@ void* string_to_void_ptr(hashmap* map, char* key, char* data);
  * @param value_type data type of the value
  */
 void print_value(void* value, type value_type);
+
+/* Returns string representation of enum type.
+ *
+ * @param map hashmap to look up
+ */
+const char* get_map_type(hashmap* map);
 
 /* Hashes string key. Uses djb2 (http://www.cse.yorku.ca/~oz/hash.html)
  * 
@@ -148,7 +156,7 @@ static void __hashmap_rehash__(hashmap* map, bucket* old_entry);
  * 
  * @param map hashmap to resize
  */
-void __hashmap_resize__(hashmap* map);
+void hashmap_resize(hashmap* map);
 
 /* Find given key with hash in given hashmap.
  * 

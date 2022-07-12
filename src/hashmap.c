@@ -4,22 +4,52 @@
 #include <string.h>
 
 int hashmap_get_int(hashmap* map, char* key)
-{ return *((int*) __hashmap_get__(map, key)); }
+{
+    void* value = __hashmap_get__(map, key);
+    if (value != NULL)
+        return *((int*) value);
+    return 0;
+}
 
 uint32_t hashmap_get_uint(hashmap* map, char* key)
-{ return *((uint32_t*) __hashmap_get__(map, key)); }
+{
+    void* value = __hashmap_get__(map, key);
+    if (value != NULL)
+        return *((uint32_t*) value);
+    return 0;
+}
 
 float hashmap_get_float(hashmap* map, char* key)
-{ return *((float*) __hashmap_get__(map, key)); }
+{
+    void* value = __hashmap_get__(map, key);
+    if (value != NULL)
+        return *((float*) value);
+    return 0.0;
+}
 
 double hashmap_get_double(hashmap* map, char* key)
-{ return *((double*) __hashmap_get__(map, key)); }
+{
+    void* value = __hashmap_get__(map, key);
+    if (value != NULL)
+        return *((double*) value);
+    return 0.0;
+}
 
 char hashmap_get_char(hashmap* map, char* key)
-{ return *((char*) __hashmap_get__(map, key)); }
+{
+    void* value = __hashmap_get__(map, key);
+    if (value != NULL)
+        return *((char*) value);
+    return 0;
+}
 
 char* hashmap_get_string(hashmap* map, char* key)
-{ return *((char**) __hashmap_get__(map, key)); }
+{
+    void* value = __hashmap_get__(map, key);
+    if (value != NULL)
+        return *((char**) value);
+    return "";
+}
 
 int return_int(void* data) { return *((int*) data); }
 uint32_t return_uint(void* data) { return *((uint32_t*) data); }
@@ -30,7 +60,7 @@ char* return_string(void* data) { return *((char**) data); }
 
 void* int_to_void_ptr(hashmap* map, char* key, int data)
 {
-    int* data_ptr = malloc(sizeof(int));
+    int* data_ptr = (int*) malloc(sizeof(int));
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -38,7 +68,7 @@ void* int_to_void_ptr(hashmap* map, char* key, int data)
 
 void* uint_to_void_ptr(hashmap* map, char* key, uint32_t data)
 {
-    uint32_t* data_ptr = malloc(sizeof(uint32_t));
+    uint32_t* data_ptr = (uint32_t*) malloc(sizeof(uint32_t));
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -46,7 +76,7 @@ void* uint_to_void_ptr(hashmap* map, char* key, uint32_t data)
 
 void* float_to_void_ptr(hashmap* map, char* key, float data)
 {
-    float* data_ptr = malloc(sizeof(float));
+    float* data_ptr = (float*) malloc(sizeof(float));
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -54,7 +84,7 @@ void* float_to_void_ptr(hashmap* map, char* key, float data)
 
 void* double_to_void_ptr(hashmap* map, char* key, double data)
 {
-    double* data_ptr = malloc(sizeof(double));
+    double* data_ptr = (double*) malloc(sizeof(double));
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -62,7 +92,7 @@ void* double_to_void_ptr(hashmap* map, char* key, double data)
 
 void* char_to_void_ptr(hashmap* map, char* key, char data)
 {
-    char* data_ptr = malloc(sizeof(char));
+    char* data_ptr = (char*) malloc(sizeof(char));
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -70,7 +100,7 @@ void* char_to_void_ptr(hashmap* map, char* key, char data)
 
 void* string_to_void_ptr(hashmap* map, char* key, char* data)
 {
-    char** data_ptr = malloc(sizeof(char*));
+    char** data_ptr = (char**) malloc(sizeof(char*));
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -103,6 +133,9 @@ void print_value(void* value, type value_type)
     }
 }
 
+const char* get_map_type(hashmap* map)
+{ return enum_type_str[map->value_type]; }
+
 uint64_t hash_string(char* key)
 {
     uint64_t hash = 5381;
@@ -121,9 +154,9 @@ void hashmap_write_entry(bucket* dest, char* key, uint64_t hash, void* value)
     dest->value = value;
     
     if (dest->key == NULL)
-        dest->key = malloc(strlen(key)*sizeof(char));
+        dest->key = (char*) calloc(sizeof(char), strlen(key)+1);
     else
-        dest->key = realloc(dest->key, strlen(key));
+        dest->key = (char*) realloc(dest->key, strlen(key)+1);
 
     strcpy(dest->key, key);
 }
@@ -135,9 +168,9 @@ void hashmap_copy_entry(bucket* dest, bucket* src)
     dest->value = src->value;
     
     if (dest->key == NULL)
-        dest->key = malloc(strlen(src->key)*sizeof(char));
+        dest->key = (char*) calloc(sizeof(char), strlen(src->key)+1);
     else
-        dest->key = realloc(dest->key, strlen(src->key));
+        dest->key = (char*) realloc(dest->key, strlen(src->key)+1);
 
     strcpy(dest->key, src->key);
 }
@@ -214,7 +247,7 @@ static void __hashmap_rehash__(hashmap* map, bucket* old_entry)
         while (current->next != NULL)
             current = current->next;
         
-        current->next = (bucket*) malloc(sizeof(bucket));
+        current->next = (bucket*) calloc(1, sizeof(bucket));
         hashmap_write_entry(current->next, old_entry->key, old_entry->hash, old_entry->value);
     }
 }
@@ -251,9 +284,7 @@ void hashmap_resize(hashmap* map)
             __hashmap_del_bucket_ll__((old_bucket_list+i)->next);
         }
         else if (current->key != NULL && current->next == NULL)
-        {
             __hashmap_rehash__(map, current);
-        }   
     }
 
     free(old_bucket_list);
@@ -268,12 +299,12 @@ static bucket* __hashmap_find__(hashmap* map, char* key, uint64_t hash, bucket**
 
     if (current->key != NULL)
     {
-        if (!strcmp(current->key, key) && current->hash == hash)
+        if ((strcmp(current->key, key) == 0) && (current->hash == hash)) // (str1 == str2) --> strcmp == 0 
             return current;
-    
+
         while (current->next != NULL)
         {
-            if (!strcmp(current->next->key, key) && current->next->hash == hash)
+            if ((strcmp(current->next->key, key) == 0) && (current->next->hash == hash))
                 return current->next;
 
             *(last_entry) = current->next;
@@ -300,7 +331,7 @@ void* __hashmap_get__(hashmap* map, char* key)
 
 static void __hashmap_add_set__(hashmap* map, char* key, void* value)
 {
-    if (map->size++ > DEFAULT_LOAD * map->capacity)
+    if (map->size+1 > DEFAULT_LOAD * map->capacity)
         hashmap_resize(map);
 
     uint64_t hash = hash_string(key);
@@ -311,21 +342,25 @@ static void __hashmap_add_set__(hashmap* map, char* key, void* value)
     if (matching_bucket != NULL)
     {
         #ifdef DEBUG
-            printf("SET KEY '%s'\n", key);
+            printf("SET KEY '%s' - ", key);
+            print_value(value, map->value_type);
+            printf("\n");
         #endif // DEBUG
         matching_bucket->value = value;
     }
     else
     {       
         #ifdef DEBUG
-            printf("CREATE KEY '%s' (map-size: %ld)\n", key, map->size);
+            printf("CREATE KEY '%s' - ", key);
+            print_value(value, map->value_type);
+            printf("(map-size: %ld)\n", map->size);
         #endif // DEBUG
 
         if (last_entry->next == NULL && last_entry->key == NULL)
             hashmap_write_entry(last_entry, key, hash, value);
         else
         {
-            bucket* new_entry = malloc(sizeof(bucket));
+            bucket* new_entry = calloc(1, sizeof(bucket));
             if (new_entry == NULL)
             {
                 fprintf(stderr, "Adding new key failed: Out of memory.\n");
@@ -333,9 +368,11 @@ static void __hashmap_add_set__(hashmap* map, char* key, void* value)
             }
 
             hashmap_write_entry(new_entry, key, hash, value);
-            
+
             last_entry->next = new_entry;
         }
+
+        map->size++;
     }
 }
 
@@ -389,7 +426,7 @@ void print_bucket(bucket* b, type value_type)
 {
     printf("key: %s, value: ", b->key);
     print_value(b->value, value_type);
-    printf(" (hash: %d)\n", b->hash);
+    printf(" (hash: %lu)\n", b->hash);
 
     if (b->next != NULL)
         print_bucket(b->next, value_type);
