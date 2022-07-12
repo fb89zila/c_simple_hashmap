@@ -15,6 +15,7 @@
 // Defines resize multiplier
 #define DEFAULT_RESIZE_MULT 2
 
+// Generic for casting incomming values to void pointers
 #define hashmap_add_set(map, key, value) _Generic((value), \
 int: int_to_void_ptr, \
 uint32_t: uint_to_void_ptr, \
@@ -40,6 +41,7 @@ enum type
     TYPE_STRING
 };
 
+// string representations of the enum type
 static const char* enum_type_str[] = {"TYPE_INT", "TYPE_UINT", "TYPE_FLOAT", "TYPE_DOUBLE", "TYPE_CHAR", "TYPE_STRING"};
 
 struct bucket
@@ -79,7 +81,7 @@ double return_double(void* data);
 char return_char(void* data);
 char* return_string(void* data);
 
-// values -> void pointer
+// values -> void pointer (see hashmap_add_set())
 
 void* int_to_void_ptr(hashmap* map, char* key, int data);
 void* uint_to_void_ptr(hashmap* map, char* key, uint32_t data);
@@ -95,20 +97,21 @@ void* string_to_void_ptr(hashmap* map, char* key, char* data);
  */
 void print_value(void* value, type value_type);
 
-/* Returns string representation of enum type.
+/* Get data type of the values in given hashmap.
  *
  * @param map hashmap to look up
+ * return string representation of the value-data type
  */
 const char* get_map_type(hashmap* map);
 
 /* Hashes string key. Uses djb2 (http://www.cse.yorku.ca/~oz/hash.html)
  * 
- * @param key string key to hash
+ * @param key key to hash
  * @return hash for given string
  */
 uint64_t hash_string(char* key);
 
-/* Writes given data to dest.
+/* Writes given data to dest. (->next = NULL)
  * 
  * @param dest destination entry
  * @param key key to write
@@ -127,7 +130,6 @@ void hashmap_copy_entry(bucket* dest, bucket* src);
 
 /* Initializes new hashmap.
  * 
- * @param keytype data type of the keys
  * @param valuetype data type of the values
  * @return pointer to new hashmap
  */
@@ -145,25 +147,25 @@ static void __hashmap_del_bucket_ll__(bucket* b);
  */
 void hashmap_del(hashmap* map);
 
-/* Rehashes entriy
+/* Rehashes entry.
  * 
  * @param map map with new bucket_list
  * @param old_bucket entry to rehash
  */
 static void __hashmap_rehash__(hashmap* map, bucket* old_entry);
 
-/* Resizes hashmap by 'DEFAULT_RESIZE_MULT'
+/* Resizes hashmap by 'DEFAULT_RESIZE_MULT'.
  * 
  * @param map hashmap to resize
  */
 void hashmap_resize(hashmap* map);
 
-/* Find given key with hash in given hashmap.
+/* Find key in given hashmap.
  * 
  * @param map hashmap
  * @param key searched key
  * @param hash hash of searched key
- * @param last_entry [out] last found entry in bucket
+ * @param last_entry <out> last found entry in bucket (first if empty and no ->next)
  * @return bucket with matching key and hash (NULL if no match)
  */
 static bucket* __hashmap_find__(hashmap* map, char* key, uint64_t hash, bucket** last_entry);
@@ -171,15 +173,15 @@ static bucket* __hashmap_find__(hashmap* map, char* key, uint64_t hash, bucket**
 /* Retrieve value for given key.
  * 
  * @param map hashmap with key
- * @param key key with value
+ * @param key searched key
  * @return value as void pointer
  */
 void* __hashmap_get__(hashmap* map, char* key);
 
-/* Add new entry to hashmap.
+/* Add new entry to hashmap or overwrite value if the key exists.
  * 
- * @param map hashmap for new entry
- * @param key new key
+ * @param map hashmap for new pair / value
+ * @param key new key / key with value to overwrite
  * @param value new value
  */
 static void __hashmap_add_set__(hashmap* map, char* key, void* value);
@@ -187,19 +189,19 @@ static void __hashmap_add_set__(hashmap* map, char* key, void* value);
 /* Remove entry from hashmap.
  * 
  * @param map hashmap with entry
- * @param key entry to remove
+ * @param key key for entry to remove
  * @return false/0 (no error) if successful
  */
 bool hashmap_remove(hashmap* map, char* key);
 
-/* Prints the given bucket
+/* Prints the given bucket.
  * 
  * @param b bucket to print
  * @param value_type data type of the value
  */
 void print_bucket(bucket* b, type value_type);
 
-/* Iterate through hashmap.
+/* Iterate through hashmap and print all entries.
  * 
  * @param map hashmap to iterate through
  */
