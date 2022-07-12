@@ -367,12 +367,12 @@ static bucket* __hashmap_find__(hashmap* map, char* key, uint64_t hash, bucket**
 
     if (current->key != NULL)
     {
-        if ((strcmp(current->key, key) == 0) && (current->hash == hash)) // (str1 == str2) --> strcmp == 0 
+        if ( (current->hash == hash) && (strcmp(current->key, key) == 0) )
             return current;
 
         while (current->next != NULL)
         {
-            if ((strcmp(current->next->key, key) == 0) && (current->next->hash == hash))
+            if ( (current->next->hash == hash) && (strcmp(current->next->key, key) == 0) )
                 return current->next;
 
             *(last_entry) = current->next;
