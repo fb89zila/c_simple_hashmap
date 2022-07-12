@@ -5,12 +5,10 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 
 project(hashmap VERSION 1.0)
 
-message(STATUS ${PROJECT_BINARY_DIR})
+add_library(hashmap_lib SHARED src/hashmap.c src/random_data.c)
 
-add_library(hashmap_src src/hashmap.c)
-add_library(random_data src/random_data.c)
-add_executable(hashmap src/hashmap_test.c)
+add_executable(hashmap_test src/hashmap_test.c)
+add_executable(hashmap_benchmark src/hashmap_benchmark.c)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "hashmap_test")
-
-target_link_libraries(hashmap PUBLIC hashmap_src random_data)
+target_link_libraries(hashmap_test PUBLIC hashmap_lib)
+target_link_libraries(hashmap_benchmark PUBLIC hashmap_lib)
