@@ -44,7 +44,6 @@ double* create_random_double_arr(size_t array_size)
 
 char* create_random_char_arr(size_t array_size)
 {
-    int CHAR_POOL_SIZE = strlen(CHAR_POOL);
     char* array = malloc(sizeof(char) * array_size);
 
     for (int i = 0; i < array_size; i++)
@@ -54,9 +53,9 @@ char* create_random_char_arr(size_t array_size)
 }
 
 char** create_random_str_arr(size_t max_str_length, size_t array_size)
-{   
-    int CHAR_POOL_SIZE = strlen(CHAR_POOL);
+{
     char** array = malloc(sizeof(char*) * array_size);
+    char* str;
 
     for (int i = 0; i < array_size; i++)
     {
@@ -65,7 +64,7 @@ char** create_random_str_arr(size_t max_str_length, size_t array_size)
         if (str_len < 2)
             str_len = 2;
 
-        char* str = malloc(sizeof(char) * str_len);
+        str = malloc(sizeof(char) * str_len);
 
         for (int j = 0; j < str_len-1; j++)
             *(str+j) = CHAR_POOL[rand() % CHAR_POOL_SIZE];

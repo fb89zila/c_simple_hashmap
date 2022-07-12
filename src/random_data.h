@@ -2,6 +2,7 @@
 #define RANDOM_DATA_H
 
 #define CHAR_POOL "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789"
+#define CHAR_POOL_SIZE 61
 
 // create random ints
 int* create_random_int_arr(size_t array_size);
