@@ -1,5 +1,6 @@
 #subfolder
 build
+.vscode
 
 # Prerequisites
 *.d
