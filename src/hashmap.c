@@ -61,6 +61,11 @@ char* return_string(void* data) { return *((char**) data); }
 void* int_to_void_ptr(hashmap* map, char* key, int data)
 {
     int* data_ptr = (int*) malloc(sizeof(int));
+    if (data_ptr == NULL)
+    {
+        fprintf(stderr, "Allocation of value data failed: Out of memory.\n");
+        exit(1);
+    }
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -69,6 +74,11 @@ void* int_to_void_ptr(hashmap* map, char* key, int data)
 void* uint_to_void_ptr(hashmap* map, char* key, uint32_t data)
 {
     uint32_t* data_ptr = (uint32_t*) malloc(sizeof(uint32_t));
+    if (data_ptr == NULL)
+    {
+        fprintf(stderr, "Allocation of value data failed: Out of memory.\n");
+        exit(1);
+    }
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -77,6 +87,11 @@ void* uint_to_void_ptr(hashmap* map, char* key, uint32_t data)
 void* float_to_void_ptr(hashmap* map, char* key, float data)
 {
     float* data_ptr = (float*) malloc(sizeof(float));
+    if (data_ptr == NULL)
+    {
+        fprintf(stderr, "Allocation of value data failed: Out of memory.\n");
+        exit(1);
+    }
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -85,6 +100,11 @@ void* float_to_void_ptr(hashmap* map, char* key, float data)
 void* double_to_void_ptr(hashmap* map, char* key, double data)
 {
     double* data_ptr = (double*) malloc(sizeof(double));
+    if (data_ptr == NULL)
+    {
+        fprintf(stderr, "Allocation of value data failed: Out of memory.\n");
+        exit(1);
+    }
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -93,6 +113,11 @@ void* double_to_void_ptr(hashmap* map, char* key, double data)
 void* char_to_void_ptr(hashmap* map, char* key, char data)
 {
     char* data_ptr = (char*) malloc(sizeof(char));
+    if (data_ptr == NULL)
+    {
+        fprintf(stderr, "Allocation of value data failed: Out of memory.\n");
+        exit(1);
+    }
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -101,6 +126,11 @@ void* char_to_void_ptr(hashmap* map, char* key, char data)
 void* string_to_void_ptr(hashmap* map, char* key, char* data)
 {
     char** data_ptr = (char**) malloc(sizeof(char*));
+    if (data_ptr == NULL)
+    {
+        fprintf(stderr, "Allocation of value data failed: Out of memory.\n");
+        exit(1);
+    }
     *data_ptr = data;
 
     __hashmap_add_set__(map, key, data_ptr);
@@ -154,9 +184,23 @@ void hashmap_write_entry(bucket* dest, char* key, uint64_t hash, void* value)
     dest->value = value;
     
     if (dest->key == NULL)
-        dest->key = (char*) calloc(strlen(key)+1, sizeof(char));
+        {
+            dest->key = (char*) calloc(strlen(key)+1, sizeof(char));
+            if (dest->key == NULL)
+            {
+                fprintf(stderr, "Adding new key failed: Out of memory.\n");
+                exit(1);
+            }
+        }
     else
-        dest->key = (char*) realloc(dest->key, strlen(key)+1);
+        {
+            dest->key = (char*) realloc(dest->key, strlen(key)+1);
+            if (dest->key == NULL)
+            {
+                fprintf(stderr, "Reallocation of key failed: Out of memory.\n");
+                exit(1);
+            }
+        }
 
     strcpy(dest->key, key);
 }
@@ -168,10 +212,23 @@ void hashmap_copy_entry(bucket* dest, bucket* src)
     dest->value = src->value;
     
     if (dest->key == NULL)
-        dest->key = (char*) calloc(strlen(src->key)+1, sizeof(char));
+        {
+            dest->key = (char*) calloc(strlen(src->key)+1, sizeof(char));
+            if (dest->key == NULL)
+            {
+                fprintf(stderr, "Adding new key failed: Out of memory.\n");
+                exit(1);
+            }
+        }
     else
-        dest->key = (char*) realloc(dest->key, strlen(src->key)+1);
-
+        {
+            dest->key = (char*) realloc(dest->key, strlen(src->key)+1);
+            if (dest->key == NULL)
+            {
+                fprintf(stderr, "Reallocation of key failed: Out of memory.\n");
+                exit(1);
+            }
+        }
     strcpy(dest->key, src->key);
 }
 
@@ -248,6 +305,12 @@ static void __hashmap_rehash__(hashmap* map, bucket* old_entry)
             current = current->next;
         
         current->next = (bucket*) calloc(1, sizeof(bucket));
+        if (current->next == NULL)
+        {
+            fprintf(stderr, "Allocation of bucket failed: Out of memory.\n");
+            exit(1);
+        }
+        
         hashmap_write_entry(current->next, old_entry->key, old_entry->hash, old_entry->value);
     }
 }
@@ -263,6 +326,11 @@ void hashmap_resize(hashmap* map)
 
     map->capacity *= DEFAULT_RESIZE_MULT;
     map->bucket_list = (bucket*) calloc(map->capacity, sizeof(bucket));
+    if (map->bucket_list == NULL)
+    {
+        fprintf(stderr, "Allocating bucket list failed: Out of memory.\n");
+        exit(1);
+    }
 
     bucket* current = NULL;
     uint32_t new_index = 0;
@@ -363,7 +431,7 @@ static void __hashmap_add_set__(hashmap* map, char* key, void* value)
             bucket* new_entry = calloc(1, sizeof(bucket));
             if (new_entry == NULL)
             {
-                fprintf(stderr, "Adding new key failed: Out of memory.\n");
+                fprintf(stderr, "Allocation of bucket failed: Out of memory.\n");
                 exit(1);
             }
 
