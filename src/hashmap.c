@@ -399,9 +399,6 @@ void* __hashmap_get__(hashmap* map, char* key)
 
 static void __hashmap_add_set__(hashmap* map, char* key, void* value)
 {
-    if (map->size+1 > DEFAULT_LOAD * map->capacity)
-        hashmap_resize(map);
-
     uint64_t hash = hash_string(key);
 
     entry* last_entry = NULL;
@@ -417,7 +414,10 @@ static void __hashmap_add_set__(hashmap* map, char* key, void* value)
         matching_bucket->value = value;
     }
     else
-    {       
+    {   
+	if (map->size+1 > DEFAULT_LOAD * map->capacity)
+        	hashmap_resize(map);
+
         #ifdef DEBUG
             printf("CREATE KEY '%s' - ", key);
             print_value(value, map->value_type);
