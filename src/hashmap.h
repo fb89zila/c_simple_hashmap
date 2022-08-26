@@ -28,7 +28,7 @@ char*: string_to_void_ptr \
 // Possible data types of the values
 typedef enum type type;
 
-typedef struct bucket bucket;
+typedef struct entry entry;
 typedef struct hashmap hashmap;
 
 enum type
@@ -44,9 +44,9 @@ enum type
 // string representations of the enum type
 static const char* enum_type_str[] = {"TYPE_INT", "TYPE_UINT", "TYPE_FLOAT", "TYPE_DOUBLE", "TYPE_CHAR", "TYPE_STRING"};
 
-struct bucket
+struct entry
 {
-    bucket* next;
+    entry* next;
 
     char* key;
     void* value;
@@ -55,7 +55,7 @@ struct bucket
 
 struct hashmap
 {
-    bucket* bucket_list;
+    entry* bucket_list;
 
     type value_type;
 
@@ -118,7 +118,7 @@ uint64_t hash_string(char* key);
  * @param hash hash to write
  * @param value value to write
  */
-void hashmap_write_entry(bucket* dest, char* key,
+void hashmap_write_entry(entry* dest, char* key,
                          uint64_t hash, void* value);
 
 /* Copies data of src to dest.
@@ -126,7 +126,7 @@ void hashmap_write_entry(bucket* dest, char* key,
  * @param dest destination entry
  * @param src source entry
  */
-void hashmap_copy_entry(bucket* dest, bucket* src);
+void hashmap_copy_entry(entry* dest, entry* src);
 
 /* Initializes new hashmap.
  * 
@@ -135,11 +135,11 @@ void hashmap_copy_entry(bucket* dest, bucket* src);
  */
 hashmap* hashmap_init(type valuetype);
 
-/* Deletes bucket.
+/* Deletes entry.
  * 
- * @param b bucket to delete
+ * @param b entry to delete
  */
-static void __hashmap_del_bucket_ll__(bucket* b);
+static void __hashmap_del_bucket_ll__(entry* b);
 
 /* Deletes hashmap.
  * 
@@ -152,7 +152,7 @@ void hashmap_del(hashmap* map);
  * @param map map with new bucket_list
  * @param old_bucket entry to rehash
  */
-static void __hashmap_rehash__(hashmap* map, bucket* old_entry);
+static void __hashmap_rehash__(hashmap* map, entry* old_entry);
 
 /* Resizes hashmap by 'DEFAULT_RESIZE_MULT'.
  * 
@@ -165,10 +165,10 @@ void hashmap_resize(hashmap* map);
  * @param map hashmap
  * @param key searched key
  * @param hash hash of searched key
- * @param last_entry <out> last found entry in bucket (first if empty and no ->next)
- * @return bucket with matching key and hash (NULL if no match)
+ * @param last_entry <out> last found entry in entry (first if empty and no ->next)
+ * @return entry with matching key and hash (NULL if no match)
  */
-static bucket* __hashmap_find__(hashmap* map, char* key, uint64_t hash, bucket** last_entry);
+static entry* __hashmap_find__(hashmap* map, char* key, uint64_t hash, entry** last_entry);
 
 /* Retrieve value for given key.
  * 
@@ -194,12 +194,12 @@ static void __hashmap_add_set__(hashmap* map, char* key, void* value);
  */
 bool hashmap_remove(hashmap* map, char* key);
 
-/* Prints the given bucket.
+/* Prints the given entry.
  * 
- * @param b bucket to print
+ * @param b entry to print
  * @param value_type data type of the value
  */
-void print_bucket(bucket* b, type value_type);
+void print_bucket(entry* b, type value_type);
 
 /* Iterate through hashmap and print all entries.
  * 

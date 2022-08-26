@@ -177,7 +177,7 @@ uint64_t hash_string(char* key)
     return hash;
 }
 
-void hashmap_write_entry(bucket* dest, char* key, uint64_t hash, void* value)
+void hashmap_write_entry(entry* dest, char* key, uint64_t hash, void* value)
 {
     dest->next = NULL;
     dest->hash = hash;
@@ -205,7 +205,7 @@ void hashmap_write_entry(bucket* dest, char* key, uint64_t hash, void* value)
     strcpy(dest->key, key);
 }
 
-void hashmap_copy_entry(bucket* dest, bucket* src)
+void hashmap_copy_entry(entry* dest, entry* src)
 {
     dest->next = src->next;
     dest->hash = src->hash;
@@ -245,7 +245,7 @@ hashmap* hashmap_init(type valuetype)
     map->capacity = DEFAULT_CAPACITY;
     map->size = 0;
 
-    map->bucket_list = (bucket*) calloc(DEFAULT_CAPACITY, sizeof(bucket));
+    map->bucket_list = (entry*) calloc(DEFAULT_CAPACITY, sizeof(entry));
     if (map->bucket_list == NULL)
     {
         fprintf(stderr, "Allocating bucket list failed: Out of memory.\n");
@@ -255,7 +255,7 @@ hashmap* hashmap_init(type valuetype)
     return map;
 }
 
-static void __hashmap_del_bucket_ll__(bucket* b)
+static void __hashmap_del_bucket_ll__(entry* b)
 {
     if (b->next != NULL)
         __hashmap_del_bucket_ll__(b->next);
@@ -291,11 +291,11 @@ void hashmap_del(hashmap* map)
     free(map);
 }
 
-static void __hashmap_rehash__(hashmap* map, bucket* old_entry)
+static void __hashmap_rehash__(hashmap* map, entry* old_entry)
 {
     uint32_t new_index = (u_int32_t) (old_entry->hash % map->capacity);
     
-    bucket* current = map->bucket_list+new_index;
+    entry* current = map->bucket_list+new_index;
 
     if (current->key == NULL)
         hashmap_write_entry(current, old_entry->key, old_entry->hash, old_entry->value);
@@ -304,10 +304,10 @@ static void __hashmap_rehash__(hashmap* map, bucket* old_entry)
         while (current->next != NULL)
             current = current->next;
         
-        current->next = (bucket*) calloc(1, sizeof(bucket));
+        current->next = (entry*) calloc(1, sizeof(entry));
         if (current->next == NULL)
         {
-            fprintf(stderr, "Allocation of bucket failed: Out of memory.\n");
+            fprintf(stderr, "Allocation of entry failed: Out of memory.\n");
             exit(1);
         }
         
@@ -321,18 +321,18 @@ void hashmap_resize(hashmap* map)
         printf("+--------------+\n| RESIZING MAP |\n+--------------+\n\n");
     #endif // DEBUG
 
-    bucket* old_bucket_list = map->bucket_list;
+    entry* old_bucket_list = map->bucket_list;
     size_t old_capacity = map->capacity;
 
     map->capacity *= DEFAULT_RESIZE_MULT;
-    map->bucket_list = (bucket*) calloc(map->capacity, sizeof(bucket));
+    map->bucket_list = (entry*) calloc(map->capacity, sizeof(entry));
     if (map->bucket_list == NULL)
     {
         fprintf(stderr, "Allocating bucket list failed: Out of memory.\n");
         exit(1);
     }
 
-    bucket* current = NULL;
+    entry* current = NULL;
     uint32_t new_index = 0;
 
     for (int i = 0; i < old_capacity; i++)
@@ -358,11 +358,11 @@ void hashmap_resize(hashmap* map)
     free(old_bucket_list);
 }
 
-static bucket* __hashmap_find__(hashmap* map, char* key, uint64_t hash, bucket** last_entry)
+static entry* __hashmap_find__(hashmap* map, char* key, uint64_t hash, entry** last_entry)
 {
     uint32_t index = (u_int32_t) (hash % map->capacity);
 
-    bucket* current = map->bucket_list+index;
+    entry* current = map->bucket_list+index;
     *(last_entry) = current;
 
     if (current->key != NULL)
@@ -387,8 +387,8 @@ void* __hashmap_get__(hashmap* map, char* key)
 {
     uint64_t hash = hash_string(key);
 
-    bucket* last_entry = NULL;
-    bucket* matching_bucket = __hashmap_find__(map, key, hash, &last_entry);
+    entry* last_entry = NULL;
+    entry* matching_bucket = __hashmap_find__(map, key, hash, &last_entry);
 
     if (matching_bucket != NULL)
         return matching_bucket->value;
@@ -404,8 +404,8 @@ static void __hashmap_add_set__(hashmap* map, char* key, void* value)
 
     uint64_t hash = hash_string(key);
 
-    bucket* last_entry = NULL;
-    bucket* matching_bucket = __hashmap_find__(map, key, hash, &last_entry);
+    entry* last_entry = NULL;
+    entry* matching_bucket = __hashmap_find__(map, key, hash, &last_entry);
 
     if (matching_bucket != NULL)
     {
@@ -428,10 +428,10 @@ static void __hashmap_add_set__(hashmap* map, char* key, void* value)
             hashmap_write_entry(last_entry, key, hash, value);
         else
         {
-            bucket* new_entry = calloc(1, sizeof(bucket));
+            entry* new_entry = calloc(1, sizeof(entry));
             if (new_entry == NULL)
             {
-                fprintf(stderr, "Allocation of bucket failed: Out of memory.\n");
+                fprintf(stderr, "Allocation of entry failed: Out of memory.\n");
                 exit(1);
             }
 
@@ -448,8 +448,8 @@ bool hashmap_remove(hashmap* map, char* key)
 {
     uint64_t hash = hash_string(key);
 
-    bucket* last_entry = NULL;
-    bucket* to_delete = __hashmap_find__(map, key, hash, &last_entry);
+    entry* last_entry = NULL;
+    entry* to_delete = __hashmap_find__(map, key, hash, &last_entry);
 
     if (to_delete == NULL)
     {
@@ -475,7 +475,7 @@ bool hashmap_remove(hashmap* map, char* key)
         }
         else if (to_delete->next != NULL && last_entry == to_delete)
         {
-            bucket* next_entry = to_delete->next;
+            entry* next_entry = to_delete->next;
             hashmap_copy_entry(to_delete, next_entry);
             free(next_entry);      
         }
@@ -490,7 +490,7 @@ bool hashmap_remove(hashmap* map, char* key)
     }
 }
 
-void print_bucket(bucket* b, type value_type)
+void print_bucket(entry* b, type value_type)
 {
     printf("key: '%s', value: '", b->key);
     print_value(b->value, value_type);
